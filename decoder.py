@@ -127,6 +127,36 @@ class ITVParser:
                     processed_value = 0.0
             processed_data[field_name] = processed_value
         return processed_data
+    
+    def _finalize_block(
+        self,
+        current_block,
+        temp_data,
+        c_observations
+    ):
+        if current_block is None:
+            return None
+
+        if c_observations:
+            current_block["observations"] = c_observations.copy()
+
+        raw_data = {}
+
+        for _, content in temp_data.items():
+            keys = content["header"]
+            values = content["values"]
+
+            if values is None:
+                continue
+
+            for k, v in zip(keys, values):
+                raw_data[k] = v
+
+        if raw_data:
+            processed_block = self._process_segment_data(raw_data)
+            current_block.update(processed_block)
+
+        return current_block
 
     def _parse_xml(self, file_path):
         """Parse XML format ITV file"""
@@ -198,10 +228,16 @@ class ITVParser:
         last_b_key = None
         c_header_keys = []
         c_observations = []
+        separator = ";"
+        quote = '"'
         for line in lines:
             line = line.strip()
             if not line:
                 continue
+            if line.startswith("#A3="):
+                separator = line[len("#A3="):].strip()
+            elif line.startswith("#A5="):
+                quote = line[len("#A5="):].strip()
             if line.startswith("#B01="):
                 if current_block:
                     blocks.append(current_block)
@@ -210,39 +246,33 @@ class ITVParser:
                 c_observations.clear()
                 c_header_keys.clear()
                 last_b_key = "B01"
-                header_keys = line[len("#B01=") :].split(";")
-                header_keys = [h.strip('"') for h in header_keys]
+                header_keys = line[len("#B01=") :].split(separator)
+                header_keys = [h.strip(quote) for h in header_keys]
                 temp_data["B01"] = {"header": header_keys, "values": None}
             elif line.startswith("#B02="):
                 last_b_key = "B02"
-                header_keys = line[len("#B02=") :].split(";")
-                header_keys = [h.strip('"') for h in header_keys]
+                header_keys = line[len("#B02=") :].split(separator)
+                header_keys = [h.strip(quote) for h in header_keys]
                 temp_data["B02"] = {"header": header_keys, "values": None}
             elif line.startswith("#B03="):
                 last_b_key = "B03"
-                header_keys = line[len("#B03=") :].split(";")
-                header_keys = [h.strip('"') for h in header_keys]
+                header_keys = line[len("#B03=") :].split(separator)
+                header_keys = [h.strip(quote) for h in header_keys]
                 temp_data["B03"] = {"header": header_keys, "values": None}
             elif line.startswith("#C="):
                 last_b_key = "C"
-                c_header_keys = line[len("#C=") :].split(";")
-                c_header_keys = [h.strip('"') for h in c_header_keys]
+                c_header_keys = line[len("#C=") :].split(separator)
+                c_header_keys = [h.strip(quote) for h in c_header_keys]
             elif line == "#Z":
-                if c_observations and current_block is not None:
-                    current_block["observations"] = c_observations.copy()
-                raw_data = {}
-                for _, content in temp_data.items():
-                    keys = content["header"]
-                    values = content["values"]
-                    if values is None:
-                        continue
-                    for k, v in zip(keys, values):
-                        raw_data[k] = v
-                if raw_data:
-                    processed_block = self._process_segment_data(raw_data)
-                    current_block.update(processed_block)
-                if current_block:
-                    blocks.append(current_block)
+                block = self._finalize_block(
+                    current_block,
+                    temp_data,
+                    c_observations
+                )
+
+                if block:
+                    blocks.append(block)
+
                 temp_data.clear()
                 c_observations.clear()
                 c_header_keys.clear()
@@ -250,8 +280,8 @@ class ITVParser:
                 current_block = None
             else:
                 if last_b_key == "C" and c_header_keys:
-                    values = line.split(";")
-                    values = [v.strip('"') for v in values]
+                    values = line.split(separator)
+                    values = [v.strip(quote) for v in values]
                     observation_data = {}
                     for _, (key, value) in enumerate(zip(c_header_keys, values)):
                         if key in description_champs:
@@ -280,11 +310,18 @@ class ITVParser:
                             )
                     c_observations.append(observation_data)
                 elif last_b_key and last_b_key in temp_data:
-                    values = line.split(";")
-                    values = [v.strip('"') for v in values]
+                    values = line.split(separator)
+                    values = [v.strip(quote) for v in values]
                     temp_data[last_b_key]["values"] = values
-        if current_block:
-            blocks.append(current_block)
+        block = self._finalize_block(
+            current_block,
+            temp_data,
+            c_observations
+        )
+
+        if block:
+            blocks.append(block)
+
         return blocks
 
 

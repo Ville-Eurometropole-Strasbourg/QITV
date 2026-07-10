@@ -1,7 +1,7 @@
 """
 map_tool.py
 A minimal QgsMapTool that emits one feature-picked signal then deactivates.
-Used by TubeDialog to fill the AAA field from a map click.
+Used by TubeDialog to fill the AAA/AAB/AAF fields from a map click.
 """
 
 from qgis.core import QgsGeometry
@@ -15,41 +15,43 @@ class FeaturePickerTool(QgsMapTool):
     Single-use map tool.
 
     After the user clicks on the canvas the tool:
-      1. Finds the closest feature in `layer` within a small tolerance.
-      2. Emits `feature_picked(value)` with the string value of `field_name`.
+      1. Finds the closest feature in `layer`.
+      2. Emits feature_picked(feature).
       3. Restores the previous map tool automatically.
     """
 
-    feature_picked = pyqtSignal(str)
+    feature_picked = pyqtSignal(object)
 
-    def __init__(self, canvas, layer, field_name):
+    def __init__(self, canvas, layer):
         super().__init__(canvas)
         self._layer = layer
-        self._field_name = field_name
         self._previous_tool = canvas.mapTool()
         self.setCursor(QCursor(Qt.CrossCursor))
 
     def canvasReleaseEvent(self, event):  # noqa: N802
         """Triggered on mouse release — find the nearest feature and emit."""
         point = self.toLayerCoordinates(self._layer, event.pos())
+
         radius = self.canvas().extent().width() * 5 / self.canvas().width()
         request_rect = QgsGeometry.fromPointXY(point).buffer(radius, 5).boundingBox()
-        value = ""
+
+        best_feature = None
         best_dist = float("inf")
+
+        point_geom = QgsGeometry.fromPointXY(point)
+
         for feat in self._layer.getFeatures(request_rect):
             geom = feat.geometry()
             if geom is None:
                 continue
-            dist = geom.distance(
-                __import__(
-                    "qgis.core", fromlist=["QgsGeometry"]
-                ).QgsGeometry.fromPointXY(point)
-            )
+
+            dist = geom.distance(point_geom)
+
             if dist < best_dist:
                 best_dist = dist
-                val = feat.attribute(self._field_name)
-                value = str(val) if val is not None else ""
-        self.feature_picked.emit(value)
+                best_feature = feat
+
+        self.feature_picked.emit(best_feature)
         self.canvas().setMapTool(self._previous_tool)
 
     def keyPressEvent(self, event):

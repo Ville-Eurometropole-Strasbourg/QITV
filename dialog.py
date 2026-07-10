@@ -123,6 +123,8 @@ class XmlReaderDialog(QDialog):
         selected_field = self._cfg.get("troncon_field", "")
         branchement_layer_id = self._cfg.get("branchement_layer_id", "")
         branchement_selected_field = self._cfg.get("branchement_field", "")
+        ndam_id = self._cfg.get("nd_amont_id", "")
+        ndav_id = self._cfg.get("nd_aval_id", "")
 
         if not layer_id or not selected_field:
             self.text_edit.setPlainText(
@@ -155,6 +157,8 @@ class XmlReaderDialog(QDialog):
             selected_field,
             branchement_layer_id,
             branchement_selected_field,
+            ndam_id,
+            ndav_id,
         )
         self.current_task.taskCompleted.connect(self.task_finished)
         QgsApplication.taskManager().addTask(self.current_task)
@@ -259,8 +263,10 @@ class TubeDialog(QDialog):
         self.btn_pick.setFixedWidth(32)
         aaa_row.addWidget(self.aaa)
         aaa_row.addWidget(self.btn_pick)
+        aab_row = QHBoxLayout()
         self.aab = QLineEdit()
         self.aab.setPlaceholderText("ex: RV20112-1")
+        aab_row.addWidget(self.aab)
         self.aad = QLineEdit()
         self.aad.setPlaceholderText("= AAB si vide")
         self.aaf = QLineEdit()
@@ -273,7 +279,8 @@ class TubeDialog(QDialog):
         self.aal = _make_combo(_TYPE_EMPL_OPTIONS, "A")
         self.aav = QCheckBox()
         form_id.addRow("Numéro tronçon (AAA)* :", aaa_row)
-        form_id.addRow("Nœud départ (AAB)* :", self.aab)
+        """form_id.addRow("Nœud départ (AAB)* :", self.aab)"""
+        form_id.addRow("Nœud départ (AAB)* :", aab_row)
         form_id.addRow("Nœud départ réf. (AAD) :", self.aad)
         form_id.addRow("Nœud arrivée (AAF)* :", self.aaf)
         form_id.addRow("Rue (AAJ) :", self.aaj)
@@ -339,21 +346,99 @@ class TubeDialog(QDialog):
         )
         self.btn_pick.setEnabled(False)
         self.setWindowModality(Qt.NonModal)
-        self._pick_tool = FeaturePickerTool(canvas, layer, field)
+        self._pick_tool = FeaturePickerTool(canvas, layer)
         self._pick_tool.feature_picked.connect(self._on_feature_picked)
         canvas.setMapTool(self._pick_tool)
 
-    def _on_feature_picked(self, value):
+    def _find_ban_info(self, feature):
+
+        cfg = load_config()
+
+        ban_layer = _layer_from_config(
+            cfg.get("ban_layer_id", "")
+        )
+
+        champ_voie = cfg.get("ban_nom_voie", "")
+        champ_com = cfg.get("ban_nom_com", "")
+
+        if not ban_layer:
+            print("Pas de couche BAN")
+            return "", ""
+
+        geom = feature.geometry()
+
+        if geom is None:
+            return "", ""
+
+        bbox = geom.buffer(15, 5).boundingBox()
+
+        meilleur = None
+        distance_min = float("inf")
+
+        for ban_feat in ban_layer.getFeatures(bbox):
+
+            ban_geom = ban_feat.geometry()
+
+            if ban_geom is None:
+                continue
+
+            dist = ban_geom.distance(geom)
+
+            if dist < distance_min:
+                distance_min = dist
+                meilleur = ban_feat
+
+        if meilleur:
+
+            voie = meilleur.attribute(champ_voie)
+            commune = meilleur.attribute(champ_com)
+
+            print("BAN TROUVEE :", voie, commune, "distance", distance_min)
+
+            return (
+                str(voie) if voie else "",
+                str(commune) if commune else ""
+            )
+
+        return "", ""
+
+    def _on_feature_picked(self, feature):
         """Called by FeaturePickerTool after a single click."""
         self.setWindowModality(Qt.ApplicationModal)
         self.activateWindow()
         self.btn_pick.setEnabled(True)
         self.status_label.setText("")
         self._pick_tool = None
-        if value:
-            self.aaa.setText(value)
-        else:
+        if feature is None:
             self.status_label.setText("Aucun tronçon trouvé à cet emplacement.")
+            return
+
+        cfg = load_config()
+
+        champ_aaa = cfg.get("troncon_field", "")
+        champ_am = cfg.get("nd_amont_id", "")
+        champ_av = cfg.get("nd_aval_id", "")
+
+        if champ_aaa:
+            val = feature.attribute(champ_aaa)
+            if val is not None:
+                self.aaa.setText(str(val))
+
+        if champ_am:
+            val = feature.attribute(champ_am)
+            if val is not None:
+                self.aab.setText(str(val))
+
+        if champ_av:
+            val = feature.attribute(champ_av)
+            if val is not None:
+                self.aaf.setText(str(val))
+
+        voie, commune = self._find_ban_info(feature)
+        if voie:
+            self.aaj.setText(voie)
+        if commune:
+            self.aan.setText(commune)
 
     def _restore_tool(self):
         """Cancel any active pick tool cleanly."""
@@ -411,6 +496,8 @@ class TubeDialog(QDialog):
         aaa = self.aaa.text().strip()
         aab = self.aab.text().strip()
         aaf = self.aaf.text().strip()
+        aaj = self.aaj.text().strip()
+        aan = self.aan.text().strip()
         if not aaa or not aab or not aaf:
             QMessageBox.warning(
                 self,
@@ -426,8 +513,8 @@ class TubeDialog(QDialog):
             "AAB": aab,
             "AAD": self.aad.text().strip() or aab,
             "AAF": aaf,
-            "AAJ": self.aaj.text().strip(),
-            "AAN": self.aan.text().strip(),
+            "AAJ": aaj,
+            "AAN": aan,
             "AAK": self.aak.currentData(),
             "AAL": self.aal.currentData(),
             "ABP": self.abp.currentData(),

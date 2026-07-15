@@ -9,6 +9,7 @@
 
 ###Fixed
 - Fixed incorrect field labels for the #B01 and #B03 tags.
+- Fixed orientation AAK
 
 ## [1.1] - 2026-07-09
 

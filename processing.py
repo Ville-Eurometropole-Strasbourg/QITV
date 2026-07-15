@@ -377,7 +377,7 @@ def _tube_to_txt(d):
         _q(d.get("AAD", d.get("AAB", ""))),
         _q(d.get("AAF", "")),
         _q(d.get("AAJ", "")),
-        d.get("AAK", "A"),
+        _q(d.get("AAK", "A")),
         d.get("AAL", "Z"),
         d.get("AAM", ""),
         _q(d.get("AAN", "")),
@@ -404,7 +404,6 @@ def _tube_to_txt(d):
         d.get("ABR", ""),
         d.get("ABS", ""),
     ]
-    b02_values_list.append('""')
     b02_values = ",".join(b02_values_list)
     acb = d.get("ACB", "0")
     acc_raw = d.get("ACC", "")

@@ -175,14 +175,14 @@ class XmlReaderDialog(QDialog):
 
 
 _SENS_OPTIONS = [
-    ("A", "A – Aval vers amont"),
-    ("B", "B – Amont vers aval"),
-    ("Z", "Z – Inconnu"),
+    ("A", "A – Amont vers aval"),
+    ("B", "B – Aval vers amont"),
+    ("C", "C – Inconnu"),
 ]
 _TYPE_EMPL_OPTIONS = [
     ("A", "A – Public"),
     ("B", "B – Privé"),
-    ("Z", "Z – Inconnu"),
+    ("C", "C – Inconnu"),
 ]
 _METHODE_OPTIONS = [
     ("C", "C – Caméra"),
@@ -275,7 +275,7 @@ class TubeDialog(QDialog):
         self.aaj.setPlaceholderText("ex: ROUTE D'ITTENHEIM")
         self.aan = QLineEdit()
         self.aan.setPlaceholderText("ex: ACHENHEIM")
-        self.aak = _make_combo(_SENS_OPTIONS, "B")
+        self.aak = _make_combo(_SENS_OPTIONS, "A")
         self.aal = _make_combo(_TYPE_EMPL_OPTIONS, "A")
         self.aav = QCheckBox()
         form_id.addRow("Numéro tronçon (AAA)* :", aaa_row)

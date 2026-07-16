@@ -171,8 +171,8 @@ class XmlReaderDialog(QDialog):
 
 
 _SENS_OPTIONS = [
-    ("A", "A – Aval vers amont"),
-    ("B", "B – Amont vers aval"),
+    ("A", "A – Amont vers aval"),
+    ("B", "B – Aval vers amont"),
     ("Z", "Z – Inconnu"),
 ]
 _TYPE_EMPL_OPTIONS = [

@@ -176,36 +176,85 @@ _SENS_OPTIONS = [
     ("Z", "Z – Inconnu"),
 ]
 _TYPE_EMPL_OPTIONS = [
-    ("A", "A – Public"),
-    ("B", "B – Privé"),
-    ("Z", "Z – Inconnu"),
+    ("A", "A – Sous une route"),
+    ("B", "B – Sous un trottoir"),
+    ("C", "C – Sous l'accotement d'une route"),
+    ("D", "D – Dans une autre zone piétonnière"),
+    ("E", "E – Dans un champ"),
+    ("F", "F – Sous une propriété bâtie"),
+    ("G", "G – Sous des jardins"),
+    ("H", "H – Sous un bâtiment permanent"),
+    ("I", "I – Sous un terrain boisé"),
+    ("J", "J – Accès difficile (ex. autoroute ou voie ferrée en service)"),
+    ("K", "K – Sous une voie navigable"),
+    ("X", "X – Type spécial défini par l’autorité responsable"),
+    ("Z", "Z – Autre"),
 ]
 _METHODE_OPTIONS = [
-    ("C", "C – Caméra"),
-    ("A", "A – Visuel"),
-    ("B", "B – Laser"),
+    ("A", "A – Inspection directe"),
+    ("B", "B – Caméra"),
+    ("C", "C – inspection à partir du regard"),
+]
+_OBJET_OPTIONS = [
+    ("A", "A – Contrôle final d’une nouvelle construction"),
+    ("B", "B – Fin de la période de garantie"),
+    ("C", "C – Inspection de routine de l’état"),
+    ("D", "D – Problème structurel suspecté"),
+    ("E", "E – Problème opérationnel suspecté"),
+    ("F", "F – Problème d’infiltration suspecté"),
+    ("G", "G – Contrôle final de travaux de rénovation ou de réparation"),
+    ("H", "H – Transfert de propriété"),
+    ("I", "I – Planification d’investissement"),
+    ("J", "J – Étude par échantillon"),
+    ("Z", "Z – Autre"),
+]
+_MATERIAU_OPTIONS = [
+    ("AA", "AA – Amiante-ciment"),
+    ("AB", "AB – Bitume"),
+    ("AC", "AC – Fibres projetées"),
+    ("AD", "AD – Briquetage"),
+    ("AE", "AE – Grès"),
+    ("AF", "AF – Mortier de ciment"),
+    ("AG", "AG – Béton"),
+    ("AH", "AH – Béton armé"),
+    ("AI", "AI – Béton projeté"),
+    ("AJ", "AJ – Segments de béton"),
+    ("AK", "AK – Fibres-ciment"),
+    ("AL", "AL – Plastiques renforcés de fibres"),
+    ("AM", "AM – Fonte"),
+    ("AN", "AN – Fonte grise"),
+    ("AO", "AO – Fonte ductile"),
+    ("AP", "AP – Acier"),
+    ("AQ", "AQ – Type non identifié de fer ou d'acier"),
+    ("AR", "AR – Maçonnerie (appareillée)"),
+    ("AS", "AS – Maçonnerie (non appareillée)"),
+    ("AT", "AT – Époxy"),
+    ("AU", "AU – Polyester"),
+    ("AV", "AV – Polyéthylène"),
+    ("AW", "AW – Polypropylène"),
+    ("AX", "AX – PVC-U"),
+    ("AY", "AY – Type non identifié de plastique"),
+    ("AZ", "AZ – Matériau non identifié"),
     ("Z", "Z – Autre"),
 ]
 _FORME_OPTIONS = [
-    ("AX", "AX – Autre / Inconnu"),
-    ("AA", "AA – Circulaire"),
-    ("AB", "AB – Ovoïde"),
-    ("AC", "AC – Rectangulaire"),
-    ("AD", "AD – Trapézoïdal"),
-    ("AE", "AE – Elliptique"),
-    ("AH", "AH – Brique"),
-    ("Z", "Z  – Inconnu"),
-]
-_ACA_OPTIONS = [
-    ("A", "A – Simple"),
-    ("B", "B – Double"),
-    ("Z", "Z – Inconnu"),
+    ("A", "A – Circulaire"),
+    ("B", "B – Rectangulaire"),
+    ("C", "C – Ovoïde"),
+    ("D", "D – En U"),
+    ("E", "E – En arc"),
+    ("F", "F – Ovale"),
+    ("X", "X – Section locale définie par l'autorité responsable"),
+    ("Z", "Z – Autre"),
 ]
 _ACK_OPTIONS = [
-    ("A", "A – Bon"),
-    ("B", "B – Acceptable"),
-    ("C", "C – Mauvais"),
-    ("Z", "Z – Inconnu"),
+    ("A", "A – Eaux usées uniquement"),
+    ("B", "B – Eaux de surface uniquement"),
+    ("C", "C – Type unitaire"),
+    ("D", "D – Eaux usées industrielles"),
+    ("E", "E – Cours d’eau en caniveau"),
+    ("F", "F – Drainage souterrain ou agricole"),
+    ("Z", "Z – Autre"),
 ]
 
 
@@ -284,8 +333,9 @@ class TubeDialog(QDialog):
         grp_id.setLayout(form_id)
         grp_car = QGroupBox("Caractéristiques du tube")
         form_car = QFormLayout()
-        self.abp = _make_combo(_METHODE_OPTIONS, "C")
-        self.aca = _make_combo(_ACA_OPTIONS, "Z")
+        self.abe = _make_combo(_METHODE_OPTIONS, "B")
+        self.abp = _make_combo(_OBJET_OPTIONS, "B")
+        self.aca = _make_combo(_FORME_OPTIONS, "Z")
         self.acb = QSpinBox()
         self.acb.setRange(0, 9999)
         self.acb.setSuffix(" mm")
@@ -293,14 +343,15 @@ class TubeDialog(QDialog):
         self.acc.setRange(0, 9999)
         self.acc.setSuffix(" mm")
         self.acc.setSpecialValueText("= Hauteur")
-        self.acd = _make_combo(_FORME_OPTIONS, "AX")
+        self.acd = _make_combo(_MATERIAU_OPTIONS, "AX")
         self.ack = _make_combo(_ACK_OPTIONS, "Z")
-        form_car.addRow("Méthode inspection (ABP) :", self.abp)
-        form_car.addRow("Type conduite (ACA) :", self.aca)
+        form_car.addRow("Méthode inspection (ABE) :", self.abe)
+        form_car.addRow("Objet de l'inspection (ABP) :", self.abp)
+        form_car.addRow("Forme (ACA) :", self.aca)
         form_car.addRow("Hauteur / Ø (ACB) :", self.acb)
         form_car.addRow("Largeur (ACC) :", self.acc)
-        form_car.addRow("Forme section (ACD) :", self.acd)
-        form_car.addRow("État général (ACK) :", self.ack)
+        form_car.addRow("Matériau (ACD) :", self.acd)
+        form_car.addRow("Utilisation (ACK) :", self.ack)
         grp_car.setLayout(form_car)
         self.status_label = QLabel("")
         self.status_label.setStyleSheet("color: #b05000; font-style: italic;")
@@ -394,6 +445,7 @@ class TubeDialog(QDialog):
         self.aan.setText(d.get("AAN", ""))
         _set_combo(self.aak, d.get("AAK", "B"))
         _set_combo(self.aal, d.get("AAL", "A"))
+        _set_combo(self.abe, d.get("ABE", "C"))
         _set_combo(self.abp, d.get("ABP", "C"))
         _set_combo(self.aca, d.get("ACA", "Z"))
         _set_combo(self.acd, d.get("ACD", "AX"))
@@ -430,7 +482,8 @@ class TubeDialog(QDialog):
             "AAN": self.aan.text().strip(),
             "AAK": self.aak.currentData(),
             "AAL": self.aal.currentData(),
-            "ABP": self.abp.currentData(),
+            "ABE": self.abe.currentData(),
+            "ABP": self.abe.currentData(),
             "ACA": self.aca.currentData(),
             "ACB": str(acb),
             "ACC": str(acc),

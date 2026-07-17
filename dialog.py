@@ -334,7 +334,7 @@ class TubeDialog(QDialog):
         grp_car = QGroupBox("Caractéristiques du tube")
         form_car = QFormLayout()
         self.abe = _make_combo(_METHODE_OPTIONS, "B")
-        self.abp = _make_combo(_OBJET_OPTIONS, "B")
+        self.abp = _make_combo(_OBJET_OPTIONS, "C")
         self.aca = _make_combo(_FORME_OPTIONS, "Z")
         self.acb = QSpinBox()
         self.acb.setRange(0, 9999)
@@ -343,7 +343,7 @@ class TubeDialog(QDialog):
         self.acc.setRange(0, 9999)
         self.acc.setSuffix(" mm")
         self.acc.setSpecialValueText("= Hauteur")
-        self.acd = _make_combo(_MATERIAU_OPTIONS, "AX")
+        self.acd = _make_combo(_MATERIAU_OPTIONS, "AZ")
         self.ack = _make_combo(_ACK_OPTIONS, "Z")
         form_car.addRow("Méthode inspection (ABE) :", self.abe)
         form_car.addRow("Objet de l'inspection (ABP) :", self.abp)
@@ -483,7 +483,7 @@ class TubeDialog(QDialog):
             "AAK": self.aak.currentData(),
             "AAL": self.aal.currentData(),
             "ABE": self.abe.currentData(),
-            "ABP": self.abe.currentData(),
+            "ABP": self.abp.currentData(),
             "ACA": self.aca.currentData(),
             "ACB": str(acb),
             "ACC": str(acc),

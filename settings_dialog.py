@@ -30,10 +30,18 @@ class SettingsDialog(QDialog):
         self.troncon_field_combo = QComboBox()
         self.nd_amont_id_combo = QComboBox()
         self.nd_aval_id_combo = QComboBox()
+        self.mat_field_combo = QComboBox()
+        self.form_field_combo = QComboBox()
+        self.reseau_field_combo = QComboBox()
+        self.diametre_field_combo = QComboBox()
         form_t.addRow("Couche :", self.troncon_layer_combo)
         form_t.addRow("Champ identifiant :", self.troncon_field_combo)
         form_t.addRow("Champ identifiant noeud AM :", self.nd_amont_id_combo)
         form_t.addRow("Champ identifiant noeud AV :", self.nd_aval_id_combo)
+        form_t.addRow("Champ matériau EN 13508-2 :", self.mat_field_combo)
+        form_t.addRow("Champ diametre :", self.diametre_field_combo)
+        form_t.addRow("Champ forme EN 13508-2 :", self.form_field_combo)
+        form_t.addRow("Champ réseau EN 13508-2 :", self.reseau_field_combo)
         grp_t.setLayout(form_t)
         grp_ban = QGroupBox("Couche BAN")
         form_ban = QFormLayout()
@@ -98,12 +106,17 @@ class SettingsDialog(QDialog):
         self.troncon_field_combo.clear()
         self.nd_amont_id_combo.clear()
         self.nd_aval_id_combo.clear()
+        self.mat_field_combo.clear()
         layer = self._current_layer(self.troncon_layer_combo)
         if layer:
             for field in layer.fields():
                 self.troncon_field_combo.addItem(field.name())
                 self.nd_amont_id_combo.addItem(field.name())
                 self.nd_aval_id_combo.addItem(field.name())
+                self.mat_field_combo.addItem(field.name())
+                self.form_field_combo.addItem(field.name())
+                self.reseau_field_combo.addItem(field.name())
+                self.diametre_field_combo.addItem(field.name())
 
     def _populate_branch_fields(self):
         self.branch_field_combo.clear()
@@ -151,8 +164,12 @@ class SettingsDialog(QDialog):
             self.branch_field_combo, cfg.get("branchement_field", "")
         )
         self._set_combo_by_text(self.nd_amont_id_combo, cfg.get("nd_amont_id", ""))
-        self._set_combo_by_text(self.nd_aval_id_combo,  cfg.get("nd_aval_id", ""))
-        self._set_combo_by_data(self.ban_layer_combo,cfg.get("ban_layer_id", ""))
+        self._set_combo_by_text(self.nd_aval_id_combo, cfg.get("nd_aval_id", ""))
+        self._set_combo_by_text(self.mat_field_combo, cfg.get("mat_field", ""))
+        self._set_combo_by_text(self.form_field_combo, cfg.get("form_field", ""))
+        self._set_combo_by_text(self.reseau_field_combo, cfg.get("reseau_field", ""))
+        self._set_combo_by_text(self.diametre_field_combo, cfg.get("diametre_field", ""))
+        self._set_combo_by_data(self.ban_layer_combo, cfg.get("ban_layer_id", ""))
         self._populate_ban_fields()
         self._set_combo_by_text(self.ban_nom_voie_combo, cfg.get("ban_nom_voie", ""))
         self._set_combo_by_text(self.ban_nom_com_combo, cfg.get("ban_nom_com", ""))
@@ -177,6 +194,10 @@ class SettingsDialog(QDialog):
         branch_field = self.branch_field_combo.currentText().strip()
         nd_amont_id = self.nd_amont_id_combo.currentText().strip()
         nd_aval_id = self.nd_aval_id_combo.currentText().strip()
+        mat_field = self.mat_field_combo.currentText().strip()
+        form_field = self.form_field_combo.currentText().strip()
+        reseau_field = self.reseau_field_combo.currentText().strip()
+        diametre_field = self.diametre_field_combo.currentText().strip()
         ban_layer_id = self.ban_layer_combo.currentData() or ""
         ban_nom_voie = self.ban_nom_voie_combo.currentText().strip()
         ban_nom_com = self.ban_nom_com_combo.currentText().strip()
@@ -194,6 +215,10 @@ class SettingsDialog(QDialog):
                 "troncon_field": troncon_field,
                 "nd_amont_id": nd_amont_id,
                 "nd_aval_id": nd_aval_id,
+                "mat_field": mat_field,
+                "form_field": form_field,
+                "reseau_field": reseau_field,
+                "diametre_field": diametre_field,
                 "branchement_layer_id": branch_layer_id,
                 "branchement_field": branch_field,
                 "ban_layer_id": ban_layer_id,

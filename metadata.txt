@@ -2,7 +2,7 @@
 name=QITV
 description=Qgis plugin pour les inspections télévisées
 about=Un plugin Qgis permettant d'importer et d'exporter des fichiers XML et TXT au format NF EN 13508-2 issus de Wincan ou autres
-version=2.0
+version=2.0.6
 qgisMinimumVersion=3.26
 author=Clément Zitouni, Félix Di Mario
 email=cazitouni@metrotopic.net
@@ -10,3 +10,14 @@ repository=https://github.com/cazitouni/QITV
 tracker=https://github.com/cazitouni/QITV/issues
 homepage=https://github.com/cazitouni/QITV
 icon=icon.svg
+
+
+changelog=
+ 2.0.6 : Ajout : Détection automatique des nœuds amont et aval
+ 2.0.5 : Ajout : Récupération automatique des noms de voies et des communes.
+ 2.0.4 : Mise à jour de la configuration du plugin : Ajout du support de la couche Base Adresse Nationale (BAN).
+ 2.0.3 : Mise à jour de la configuration du plugin : Ajout des champs NF EN 13508-2 : matériau, diamètre, forme et effluent.
+ 2.0.2 : Correction des intitulés de champs incorrects pour les balises #B01 et #B03.
+ 2.0.1 : Correction de la gestion du sens d'inspection AAK.
+ 1.1.1 : Ajout du support des balises #A3 et #A5 conformément aux spécifications NF EN 13508-2.
+ 1.1.0 : Correction du traitement du dernier bloc lorsqu'il ne contient pas de balise #Z.

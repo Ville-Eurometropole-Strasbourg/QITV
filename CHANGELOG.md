@@ -5,7 +5,13 @@
 ### Added
 - Automatic detection of upstream and downstream nodes.
 - Automatic retrieval of street and municipality names.
-- Updated the plugin configuration to support the French National Address Database (BAN) layer.
+- Updated the plugin configuration:
+    - Support the French National Address Database (BAN) layer.
+    - Add NF EN 13508-2 field :
+        - material
+        - diameter
+        - shape
+        - effluent 
 
 ###Fixed
 - Fixed incorrect field labels for the #B01 and #B03 tags.

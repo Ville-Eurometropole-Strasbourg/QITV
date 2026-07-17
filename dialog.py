@@ -180,38 +180,88 @@ _SENS_OPTIONS = [
     ("C", "C – Inconnu"),
 ]
 _TYPE_EMPL_OPTIONS = [
-    ("A", "A – Public"),
-    ("B", "B – Privé"),
-    ("C", "C – Inconnu"),
+    ("A", "A – Sous une route"),
+    ("B", "B – Sous un trottoir"),
+    ("C", "C – Sous l'accotement d'une route"),
+    ("D", "D – Dans une autre zone piétonnière"),
+    ("E", "E – Dans un champ"),
+    ("F", "F – Sous une propriété bâtie"),
+    ("G", "G – Sous des jardins"),
+    ("H", "H – Sous un bâtiment permanent"),
+    ("I", "I – Sous un terrain boisé"),
+    ("J", "J – Accès difficile (ex. autoroute ou voie ferrée en service)"),
+    ("K", "K – Sous une voie navigable"),
+    ("X", "X – Type spécial défini par l’autorité responsable"),
+    ("Z", "Z – Autre"),
 ]
 _METHODE_OPTIONS = [
-    ("C", "C – Caméra"),
-    ("A", "A – Visuel"),
-    ("B", "B – Laser"),
+    ("A", "A – Inspection directe"),
+    ("B", "B – Caméra"),
+    ("C", "C – inspection à partir du regard"),
+]
+_OBJET_OPTIONS = [
+    ("A", "A – Contrôle final d’une nouvelle construction"),
+    ("B", "B – Fin de la période de garantie"),
+    ("C", "C – Inspection de routine de l’état"),
+    ("D", "D – Problème structurel suspecté"),
+    ("E", "E – Problème opérationnel suspecté"),
+    ("F", "F – Problème d’infiltration suspecté"),
+    ("G", "G – Contrôle final de travaux de rénovation ou de réparation"),
+    ("H", "H – Transfert de propriété"),
+    ("I", "I – Planification d’investissement"),
+    ("J", "J – Étude par échantillon"),
+    ("Z", "Z – Autre"),
+]
+_MATERIAU_OPTIONS = [
+    ("AA", "AA – Amiante-ciment"),
+    ("AB", "AB – Bitume"),
+    ("AC", "AC – Fibres projetées"),
+    ("AD", "AD – Briquetage"),
+    ("AE", "AE – Grès"),
+    ("AF", "AF – Mortier de ciment"),
+    ("AG", "AG – Béton"),
+    ("AH", "AH – Béton armé"),
+    ("AI", "AI – Béton projeté"),
+    ("AJ", "AJ – Segments de béton"),
+    ("AK", "AK – Fibres-ciment"),
+    ("AL", "AL – Plastiques renforcés de fibres"),
+    ("AM", "AM – Fonte"),
+    ("AN", "AN – Fonte grise"),
+    ("AO", "AO – Fonte ductile"),
+    ("AP", "AP – Acier"),
+    ("AQ", "AQ – Type non identifié de fer ou d'acier"),
+    ("AR", "AR – Maçonnerie (appareillée)"),
+    ("AS", "AS – Maçonnerie (non appareillée)"),
+    ("AT", "AT – Époxy"),
+    ("AU", "AU – Polyester"),
+    ("AV", "AV – Polyéthylène"),
+    ("AW", "AW – Polypropylène"),
+    ("AX", "AX – PVC-U"),
+    ("AY", "AY – Type non identifié de plastique"),
+    ("AZ", "AZ – Matériau non identifié"),
     ("Z", "Z – Autre"),
 ]
 _FORME_OPTIONS = [
-    ("AX", "AX – Autre / Inconnu"),
-    ("AA", "AA – Circulaire"),
-    ("AB", "AB – Ovoïde"),
-    ("AC", "AC – Rectangulaire"),
-    ("AD", "AD – Trapézoïdal"),
-    ("AE", "AE – Elliptique"),
-    ("AH", "AH – Brique"),
-    ("Z", "Z  – Inconnu"),
-]
-_ACA_OPTIONS = [
-    ("A", "A – Simple"),
-    ("B", "B – Double"),
-    ("Z", "Z – Inconnu"),
-]
-_ACK_OPTIONS = [
-    ("A", "A – Bon"),
-    ("B", "B – Acceptable"),
-    ("C", "C – Mauvais"),
-    ("Z", "Z – Inconnu"),
+    ("A", "A – Circulaire"),
+    ("B", "B – Rectangulaire"),
+    ("C", "C – Ovoïde"),
+    ("D", "D – En U"),
+    ("E", "E – En arc"),
+    ("F", "F – Ovale"),
+    ("X", "X – Section locale définie par l'autorité responsable"),
+    ("Z", "Z – Autre"),
 ]
 
+
+
+_ACK_OPTIONS = [
+    ("A", "A – Réseau EU"),
+    ("B", "B – Réseau EP"),
+    ("C", "C – Réseau unitaire"),
+    ("D", "D - EU industrielles"),
+    ("E", "E - Cours d'eau ponceau"),
+    ("Z", "Z – Autre"),
+]
 
 def _make_combo(options, default_code=None):
     combo = QComboBox()
@@ -279,7 +329,6 @@ class TubeDialog(QDialog):
         self.aal = _make_combo(_TYPE_EMPL_OPTIONS, "A")
         self.aav = QCheckBox()
         form_id.addRow("Numéro tronçon (AAA)* :", aaa_row)
-        """form_id.addRow("Nœud départ (AAB)* :", self.aab)"""
         form_id.addRow("Nœud départ (AAB)* :", aab_row)
         form_id.addRow("Nœud départ réf. (AAD) :", self.aad)
         form_id.addRow("Nœud arrivée (AAF)* :", self.aaf)
@@ -291,8 +340,9 @@ class TubeDialog(QDialog):
         grp_id.setLayout(form_id)
         grp_car = QGroupBox("Caractéristiques du tube")
         form_car = QFormLayout()
-        self.abp = _make_combo(_METHODE_OPTIONS, "C")
-        self.aca = _make_combo(_ACA_OPTIONS, "Z")
+        self.abe = _make_combo(_METHODE_OPTIONS, "B")
+        self.abp = _make_combo(_OBJET_OPTIONS, "C")
+        self.aca = _make_combo(_FORME_OPTIONS, "Z")
         self.acb = QSpinBox()
         self.acb.setRange(0, 9999)
         self.acb.setSuffix(" mm")
@@ -300,14 +350,15 @@ class TubeDialog(QDialog):
         self.acc.setRange(0, 9999)
         self.acc.setSuffix(" mm")
         self.acc.setSpecialValueText("= Hauteur")
-        self.acd = _make_combo(_FORME_OPTIONS, "AX")
+        self.acd = _make_combo(_MATERIAU_OPTIONS, "AZ")
         self.ack = _make_combo(_ACK_OPTIONS, "Z")
-        form_car.addRow("Méthode inspection (ABP) :", self.abp)
-        form_car.addRow("Type conduite (ACA) :", self.aca)
+        form_car.addRow("Méthode inspection (ABE) :", self.abe)
+        form_car.addRow("Objet de l'inspection (ABP) :", self.abp)
+        form_car.addRow("Forme (ACA) :", self.aca)
         form_car.addRow("Hauteur / Ø (ACB) :", self.acb)
         form_car.addRow("Largeur (ACC) :", self.acc)
-        form_car.addRow("Forme section (ACD) :", self.acd)
-        form_car.addRow("État général (ACK) :", self.ack)
+        form_car.addRow("Matériau (ACD) :", self.acd)
+        form_car.addRow("Réseau (ACK) :", self.ack)
         grp_car.setLayout(form_car)
         self.status_label = QLabel("")
         self.status_label.setStyleSheet("color: #b05000; font-style: italic;")
@@ -370,7 +421,7 @@ class TubeDialog(QDialog):
         if geom is None:
             return "", ""
 
-        bbox = geom.buffer(15, 5).boundingBox()
+        bbox = geom.buffer(50, 5).boundingBox()
 
         meilleur = None
         distance_min = float("inf")
@@ -418,6 +469,10 @@ class TubeDialog(QDialog):
         champ_aaa = cfg.get("troncon_field", "")
         champ_am = cfg.get("nd_amont_id", "")
         champ_av = cfg.get("nd_aval_id", "")
+        champ_aca = cfg.get("form_field", "")
+        champ_acb = cfg.get("diametre_field", "")
+        champ_acd = cfg.get("mat_field", "")
+        champ_ack = cfg.get("reseau_field", "")
 
         if champ_aaa:
             val = feature.attribute(champ_aaa)
@@ -433,6 +488,29 @@ class TubeDialog(QDialog):
             val = feature.attribute(champ_av)
             if val is not None:
                 self.aaf.setText(str(val))
+
+        if champ_aca:
+            val = feature.attribute(champ_aca)
+            if val is not None:
+                _set_combo(self.aca, str(val))
+
+        if champ_acb:
+            val = feature.attribute(champ_acb)
+            if val is not None:
+                try:
+                    self.acb.setValue(int(val))
+                except (ValueError, TypeError):
+                    pass
+
+        if champ_acd:
+            val = feature.attribute(champ_acd)
+            if val is not None:
+                _set_combo(self.acd, str(val))
+
+        if champ_ack:
+            val = feature.attribute(champ_ack)
+            if val is not None:
+                _set_combo(self.ack, str(val))
 
         voie, commune = self._find_ban_info(feature)
         if voie:
@@ -479,10 +557,11 @@ class TubeDialog(QDialog):
         self.aan.setText(d.get("AAN", ""))
         _set_combo(self.aak, d.get("AAK", "B"))
         _set_combo(self.aal, d.get("AAL", "A"))
+        _set_combo(self.abe, d.get("ABE", "C"))
         _set_combo(self.abp, d.get("ABP", "C"))
         _set_combo(self.aca, d.get("ACA", "Z"))
         _set_combo(self.acd, d.get("ACD", "AX"))
-        _set_combo(self.ack, d.get("ACK", "Z"))
+        _set_combo(self.ack, d.get("ACK", "AX"))
         try:
             self.acb.setValue(int(d.get("ACB", 0)))
         except (ValueError, TypeError):
@@ -496,8 +575,6 @@ class TubeDialog(QDialog):
         aaa = self.aaa.text().strip()
         aab = self.aab.text().strip()
         aaf = self.aaf.text().strip()
-        aaj = self.aaj.text().strip()
-        aan = self.aan.text().strip()
         if not aaa or not aab or not aaf:
             QMessageBox.warning(
                 self,
@@ -513,8 +590,8 @@ class TubeDialog(QDialog):
             "AAB": aab,
             "AAD": self.aad.text().strip() or aab,
             "AAF": aaf,
-            "AAJ": aaj,
-            "AAN": aan,
+            "AAJ": self.aaj.text().strip(),
+            "AAN": self.aan.text().strip(),
             "AAK": self.aak.currentData(),
             "AAL": self.aal.currentData(),
             "ABP": self.abp.currentData(),

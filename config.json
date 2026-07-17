@@ -1,11 +1,15 @@
 {
-  "troncon_layer_id": "collecteur",
-  "troncon_field": "asset_id_ass",
-  "nd_amont_id": "nd_amont",
-  "nd_aval_id": "nd_aval",
-  "branchement_layer_id": "branchement",
-  "branchement_field": "asset_id_ass",
-  "ban_layer_id": "ban",
-  "ban_nom_voie": "nom_voie",
-  "ban_nom_com": "nom_commune"
+  "troncon_layer_id": "...",
+  "troncon_field": "...",
+  "nd_amont_id": "...",
+  "nd_aval_id": "...",
+  "mat_field": "...",
+  "form_field": "...",
+  "reseau_field": "...",
+  "diametre_field": "...",
+  "branchement_layer_id": "...",
+  "branchement_field": "...",
+  "ban_layer_id": "...",
+  "ban_nom_voie": "...",
+  "ban_nom_com": "..."
 }

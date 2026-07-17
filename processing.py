@@ -411,9 +411,9 @@ def _tube_to_txt(d):
     b03_values = ",".join(
         [
             d.get("ACA", "Z"),       
-            acb,                     
+            d.get("ACB", "0"),                     
             acc,                     
-            d.get("ACD", "AX"),      
+            _q(d.get("ACD", "")),      
             "",                      
             "",                      
             d.get("ACG", ""),        
@@ -470,7 +470,7 @@ def _tube_to_xml(d):
         lines.append(_tag("AAN", d.get("AAN", "")))
     lines.append(_tag("ABP", d.get("ABP", "C")))
     lines.append(_tag("ACA", d.get("ACA", "Z")))
-    lines.append(_tag("ACB", acb))
+    lines.append(_tag("ACB", d.get("ACB", "0")))
     lines.append(_tag("ACC", acc))
     lines.append(_tag("ACD", d.get("ACD", "AX")))
     lines.append(_tag("ACK", d.get("ACK", "Z")))

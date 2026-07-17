@@ -157,8 +157,6 @@ class XmlReaderDialog(QDialog):
             selected_field,
             branchement_layer_id,
             branchement_selected_field,
-            ndam_id,
-            ndav_id,
         )
         self.current_task.taskCompleted.connect(self.task_finished)
         QgsApplication.taskManager().addTask(self.current_task)

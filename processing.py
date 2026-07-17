@@ -32,6 +32,7 @@ class ProcessingTask(QgsTask):
         selected_field,
         branchement_layer_id,
         branchement_selected_field,
+
     ):
         super().__init__(description)
         self.filename = filename

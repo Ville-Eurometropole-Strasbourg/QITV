@@ -253,11 +253,12 @@ _FORME_OPTIONS = [
 
 
 _ACK_OPTIONS = [
-    ("A", "A – Réseau EU"),
-    ("B", "B – Réseau EP"),
-    ("C", "C – Réseau unitaire"),
-    ("D", "D - EU industrielles"),
-    ("E", "E - Cours d'eau ponceau"),
+    ("A", "A – Eaux usées uniquement"),
+    ("B", "B – Eaux de surface uniquement"),
+    ("C", "C – Type unitaire"),
+    ("D", "D – Eaux usées industrielles"),
+    ("E", "E – Cours d’eau en caniveau"),
+    ("F", "F – Drainage souterrain ou agricole"),
     ("Z", "Z – Autre"),
 ]
 
@@ -592,6 +593,7 @@ class TubeDialog(QDialog):
             "AAN": self.aan.text().strip(),
             "AAK": self.aak.currentData(),
             "AAL": self.aal.currentData(),
+            "ABE": self.abe.currentData(),
             "ABP": self.abp.currentData(),
             "ACA": self.aca.currentData(),
             "ACB": str(acb),

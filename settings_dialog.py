@@ -107,6 +107,9 @@ class SettingsDialog(QDialog):
         self.nd_amont_id_combo.clear()
         self.nd_aval_id_combo.clear()
         self.mat_field_combo.clear()
+        self.form_field_combo.clear()
+        self.reseau_field_combo.clear()
+        self.diametre_field_combo.clear()
         layer = self._current_layer(self.troncon_layer_combo)
         if layer:
             for field in layer.fields():

@@ -123,8 +123,8 @@ class XmlReaderDialog(QDialog):
         selected_field = self._cfg.get("troncon_field", "")
         branchement_layer_id = self._cfg.get("branchement_layer_id", "")
         branchement_selected_field = self._cfg.get("branchement_field", "")
-        ndam_id = self._cfg.get("nd_amont_id", "")
-        ndav_id = self._cfg.get("nd_aval_id", "")
+        """ndam_id = self._cfg.get("nd_amont_id", "")
+        ndav_id = self._cfg.get("nd_aval_id", "")"""
 
         if not layer_id or not selected_field:
             self.text_edit.setPlainText(
@@ -253,12 +253,11 @@ _FORME_OPTIONS = [
 
 
 _ACK_OPTIONS = [
-    ("A", "A – Eaux usées uniquement"),
-    ("B", "B – Eaux de surface uniquement"),
-    ("C", "C – Type unitaire"),
-    ("D", "D – Eaux usées industrielles"),
-    ("E", "E – Cours d’eau en caniveau"),
-    ("F", "F – Drainage souterrain ou agricole"),
+    ("A", "A – Réseau EU"),
+    ("B", "B – Réseau EP"),
+    ("C", "C – Réseau unitaire"),
+    ("D", "D - EU industrielles"),
+    ("E", "E - Cours d'eau ponceau"),
     ("Z", "Z – Autre"),
 ]
 
@@ -593,7 +592,6 @@ class TubeDialog(QDialog):
             "AAN": self.aan.text().strip(),
             "AAK": self.aak.currentData(),
             "AAL": self.aal.currentData(),
-            "ABE": self.abe.currentData(),
             "ABP": self.abp.currentData(),
             "ACA": self.aca.currentData(),
             "ACB": str(acb),

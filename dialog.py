@@ -1,6 +1,7 @@
 from qgis.core import (
     QgsApplication,
     QgsProject,
+    QgsExpressionContextUtils,
 )
 from qgis.PyQt.QtCore import Qt, pyqtSignal
 from qgis.PyQt.QtGui import QIcon
@@ -515,6 +516,18 @@ class TubeDialog(QDialog):
             self.aaj.setText(voie)
         if commune:
             self.aan.setText(commune)
+
+        QgsExpressionContextUtils.setProjectVariable(
+            QgsProject.instance(),
+            "nom_rue",
+            voie
+        )
+
+        QgsExpressionContextUtils.setProjectVariable(
+            QgsProject.instance(),
+            "nom_commune",
+            commune
+        )
 
     def _restore_tool(self):
         """Cancel any active pick tool cleanly."""

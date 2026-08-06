@@ -32,6 +32,7 @@ class ProcessingTask(QgsTask):
         selected_field,
         branchement_layer_id,
         branchement_selected_field,
+
     ):
         super().__init__(description)
         self.filename = filename
@@ -354,9 +355,8 @@ class ProcessingTask(QgsTask):
         mem_layer.triggerRepaint()
 
 
-_TXT_HEADER = '#A1=ISO-8859-1:1998\n#A2=fr\n#A3=;\n#A4=.\n#A5="\n'
-_B02_HEADER = "ABP"
-_B03_HEADER = "ACA;ADE;ACB;ACC;ACD;ADE;ACG;ACH;ACI;ACK;ADE"
+_TXT_HEADER = '#A1=ISO-8859-1:1998\n#A2=fr\n#A3=,\n#A4=.\n#A5="\n'
+_B03_HEADER = "ACA,ACB,ACC,ACD,ACE,ACF,ACG,ACH,ACI,ACJ,ACK,ACM"
 
 
 def _q(value):
@@ -368,48 +368,68 @@ def _q(value):
 def _tube_to_txt(d):
     """Convert one tube dict to its TXT block string."""
     has_aav = "AAV" in d
-    b01_header_fields = ["AAA", "AAB", "AAD", "AAF", "AAJ", "AAK", "AAL", "ADE", "AAN"]
+    b01_header_fields = ["AAA", "AAB", "AAD", "AAF", "AAJ", "AAK", "AAL", "AAM", "AAN"]
     if has_aav:
         b01_header_fields.append("AAV")
-    b01_header = ";".join(b01_header_fields)
+    b01_header = ",".join(b01_header_fields)
     b01_values_list = [
         _q(d.get("AAA", "")),
         _q(d.get("AAB", "")),
         _q(d.get("AAD", d.get("AAB", ""))),
         _q(d.get("AAF", "")),
         _q(d.get("AAJ", "")),
-        d.get("AAK", "A"),
+        _q(d.get("AAK", "A")),
         d.get("AAL", "Z"),
-        '""',
+        d.get("AAM", ""),
         _q(d.get("AAN", "")),
     ]
     if has_aav:
         b01_values_list.append('""')  # empty AAV
-    b01_values = ";".join(b01_values_list)
-    b02_value = d.get("ABP", "C")
+    b01_values = ",".join(b01_values_list)
+    """b02_value = d.get("ABP", "C")"""
+    b02_header_fields = ["ABA","ABC","ABE","ABF","ABG","ABH","ABL","ABM","ABN","ABO","ABP","ABQ","ABR","ABS"]
+    b02_header = ",".join(b02_header_fields)
+    b02_values_list = [
+        d.get("ABA", "EN 13508-2:2003+A1:2011"),
+        d.get("ABC", ""),
+        d.get("ABE", ""),
+        d.get("ABF", ""),
+        d.get("ABG", ""),
+        d.get("ABH", ""),
+        d.get("ABL", ""),
+        d.get("ABM", ""),
+        d.get("ABN", ""),
+        d.get("ABO", ""),
+        d.get("ABP", "C"),
+        d.get("ABQ", ""),
+        d.get("ABR", ""),
+        d.get("ABS", ""),
+    ]
+    b02_values = ",".join(b02_values_list)
     acb = d.get("ACB", "0")
     acc_raw = d.get("ACC", "")
     acc = acc_raw if acc_raw and acc_raw != "0" else acb
-    b03_values = ";".join(
+    b03_values = ",".join(
         [
-            d.get("ACA", "Z"),
-            '""',
-            acb,
-            acc,
-            d.get("ACD", "AX"),
-            '""',
-            "",
-            "",
-            "",
-            d.get("ACK", "Z"),
-            '""',
+            d.get("ACA", "Z"),       
+            d.get("ACB", "0"),                     
+            acc,                     
+            _q(d.get("ACD", "")),      
+            "",                      
+            "",                      
+            d.get("ACG", ""),        
+            d.get("ACH", ""),        
+            d.get("ACI", ""),        
+            "",                      
+            d.get("ACK", "Z"),       
+            d.get("ACM", ""),        
         ]
     )
     return (
         f"#B01={b01_header}\n"
         f"{b01_values}\n"
-        f"#B02={_B02_HEADER}\n"
-        f"{b02_value}\n"
+        f"#B02={b02_header}\n"
+        f"{b02_values}\n"
         f"#B03={_B03_HEADER}\n"
         f"{b03_values}\n"
         f"#Z\n"
@@ -451,7 +471,7 @@ def _tube_to_xml(d):
         lines.append(_tag("AAN", d.get("AAN", "")))
     lines.append(_tag("ABP", d.get("ABP", "C")))
     lines.append(_tag("ACA", d.get("ACA", "Z")))
-    lines.append(_tag("ACB", acb))
+    lines.append(_tag("ACB", d.get("ACB", "0")))
     lines.append(_tag("ACC", acc))
     lines.append(_tag("ACD", d.get("ACD", "AX")))
     lines.append(_tag("ACK", d.get("ACK", "Z")))

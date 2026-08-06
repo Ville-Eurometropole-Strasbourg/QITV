@@ -1,6 +1,7 @@
 from qgis.core import (
     QgsApplication,
     QgsProject,
+    QgsExpressionContextUtils,
 )
 from qgis.PyQt.QtCore import Qt, pyqtSignal
 from qgis.PyQt.QtGui import QIcon
@@ -123,6 +124,8 @@ class XmlReaderDialog(QDialog):
         selected_field = self._cfg.get("troncon_field", "")
         branchement_layer_id = self._cfg.get("branchement_layer_id", "")
         branchement_selected_field = self._cfg.get("branchement_field", "")
+        """ndam_id = self._cfg.get("nd_amont_id", "")
+        ndav_id = self._cfg.get("nd_aval_id", "")"""
 
         if not layer_id or not selected_field:
             self.text_edit.setPlainText(
@@ -173,7 +176,7 @@ class XmlReaderDialog(QDialog):
 _SENS_OPTIONS = [
     ("A", "A – Amont vers aval"),
     ("B", "B – Aval vers amont"),
-    ("Z", "Z – Inconnu"),
+    ("C", "C – Inconnu"),
 ]
 _TYPE_EMPL_OPTIONS = [
     ("A", "A – Sous une route"),
@@ -247,16 +250,17 @@ _FORME_OPTIONS = [
     ("X", "X – Section locale définie par l'autorité responsable"),
     ("Z", "Z – Autre"),
 ]
+
+
+
 _ACK_OPTIONS = [
-    ("A", "A – Eaux usées uniquement"),
-    ("B", "B – Eaux de surface uniquement"),
-    ("C", "C – Type unitaire"),
-    ("D", "D – Eaux usées industrielles"),
-    ("E", "E – Cours d’eau en caniveau"),
-    ("F", "F – Drainage souterrain ou agricole"),
+    ("A", "A – Réseau EU"),
+    ("B", "B – Réseau EP"),
+    ("C", "C – Réseau unitaire"),
+    ("D", "D - EU industrielles"),
+    ("E", "E - Cours d'eau ponceau"),
     ("Z", "Z – Autre"),
 ]
-
 
 def _make_combo(options, default_code=None):
     combo = QComboBox()
@@ -308,8 +312,10 @@ class TubeDialog(QDialog):
         self.btn_pick.setFixedWidth(32)
         aaa_row.addWidget(self.aaa)
         aaa_row.addWidget(self.btn_pick)
+        aab_row = QHBoxLayout()
         self.aab = QLineEdit()
         self.aab.setPlaceholderText("ex: RV20112-1")
+        aab_row.addWidget(self.aab)
         self.aad = QLineEdit()
         self.aad.setPlaceholderText("= AAB si vide")
         self.aaf = QLineEdit()
@@ -318,11 +324,11 @@ class TubeDialog(QDialog):
         self.aaj.setPlaceholderText("ex: ROUTE D'ITTENHEIM")
         self.aan = QLineEdit()
         self.aan.setPlaceholderText("ex: ACHENHEIM")
-        self.aak = _make_combo(_SENS_OPTIONS, "B")
+        self.aak = _make_combo(_SENS_OPTIONS, "A")
         self.aal = _make_combo(_TYPE_EMPL_OPTIONS, "A")
         self.aav = QCheckBox()
         form_id.addRow("Numéro tronçon (AAA)* :", aaa_row)
-        form_id.addRow("Nœud départ (AAB)* :", self.aab)
+        form_id.addRow("Nœud départ (AAB)* :", aab_row)
         form_id.addRow("Nœud départ réf. (AAD) :", self.aad)
         form_id.addRow("Nœud arrivée (AAF)* :", self.aaf)
         form_id.addRow("Rue (AAJ) :", self.aaj)
@@ -351,7 +357,7 @@ class TubeDialog(QDialog):
         form_car.addRow("Hauteur / Ø (ACB) :", self.acb)
         form_car.addRow("Largeur (ACC) :", self.acc)
         form_car.addRow("Matériau (ACD) :", self.acd)
-        form_car.addRow("Utilisation (ACK) :", self.ack)
+        form_car.addRow("Réseau (ACK) :", self.ack)
         grp_car.setLayout(form_car)
         self.status_label = QLabel("")
         self.status_label.setStyleSheet("color: #b05000; font-style: italic;")
@@ -390,21 +396,138 @@ class TubeDialog(QDialog):
         )
         self.btn_pick.setEnabled(False)
         self.setWindowModality(Qt.NonModal)
-        self._pick_tool = FeaturePickerTool(canvas, layer, field)
+        self._pick_tool = FeaturePickerTool(canvas, layer)
         self._pick_tool.feature_picked.connect(self._on_feature_picked)
         canvas.setMapTool(self._pick_tool)
 
-    def _on_feature_picked(self, value):
+    def _find_ban_info(self, feature):
+
+        cfg = load_config()
+
+        ban_layer = _layer_from_config(
+            cfg.get("ban_layer_id", "")
+        )
+
+        champ_voie = cfg.get("ban_nom_voie", "")
+        champ_com = cfg.get("ban_nom_com", "")
+
+        if not ban_layer:
+            print("Pas de couche BAN")
+            return "", ""
+
+        geom = feature.geometry()
+
+        if geom is None:
+            return "", ""
+
+        bbox = geom.buffer(50, 5).boundingBox()
+
+        meilleur = None
+        distance_min = float("inf")
+
+        for ban_feat in ban_layer.getFeatures(bbox):
+
+            ban_geom = ban_feat.geometry()
+
+            if ban_geom is None:
+                continue
+
+            dist = ban_geom.distance(geom)
+
+            if dist < distance_min:
+                distance_min = dist
+                meilleur = ban_feat
+
+        if meilleur:
+
+            voie = meilleur.attribute(champ_voie)
+            commune = meilleur.attribute(champ_com)
+
+            print("BAN TROUVEE :", voie, commune, "distance", distance_min)
+
+            return (
+                str(voie) if voie else "",
+                str(commune) if commune else ""
+            )
+
+        return "", ""
+
+    def _on_feature_picked(self, feature):
         """Called by FeaturePickerTool after a single click."""
         self.setWindowModality(Qt.ApplicationModal)
         self.activateWindow()
         self.btn_pick.setEnabled(True)
         self.status_label.setText("")
         self._pick_tool = None
-        if value:
-            self.aaa.setText(value)
-        else:
+        if feature is None:
             self.status_label.setText("Aucun tronçon trouvé à cet emplacement.")
+            return
+
+        cfg = load_config()
+
+        champ_aaa = cfg.get("troncon_field", "")
+        champ_am = cfg.get("nd_amont_id", "")
+        champ_av = cfg.get("nd_aval_id", "")
+        champ_aca = cfg.get("form_field", "")
+        champ_acb = cfg.get("diametre_field", "")
+        champ_acd = cfg.get("mat_field", "")
+        champ_ack = cfg.get("reseau_field", "")
+
+        if champ_aaa:
+            val = feature.attribute(champ_aaa)
+            if val is not None:
+                self.aaa.setText(str(val))
+
+        if champ_am:
+            val = feature.attribute(champ_am)
+            if val is not None:
+                self.aab.setText(str(val))
+
+        if champ_av:
+            val = feature.attribute(champ_av)
+            if val is not None:
+                self.aaf.setText(str(val))
+
+        if champ_aca:
+            val = feature.attribute(champ_aca)
+            if val is not None:
+                _set_combo(self.aca, str(val))
+
+        if champ_acb:
+            val = feature.attribute(champ_acb)
+            if val is not None:
+                try:
+                    self.acb.setValue(int(val))
+                except (ValueError, TypeError):
+                    pass
+
+        if champ_acd:
+            val = feature.attribute(champ_acd)
+            if val is not None:
+                _set_combo(self.acd, str(val))
+
+        if champ_ack:
+            val = feature.attribute(champ_ack)
+            if val is not None:
+                _set_combo(self.ack, str(val))
+
+        voie, commune = self._find_ban_info(feature)
+        if voie:
+            self.aaj.setText(voie)
+        if commune:
+            self.aan.setText(commune)
+
+        QgsExpressionContextUtils.setProjectVariable(
+            QgsProject.instance(),
+            "nom_rue",
+            voie
+        )
+
+        QgsExpressionContextUtils.setProjectVariable(
+            QgsProject.instance(),
+            "nom_commune",
+            commune
+        )
 
     def _restore_tool(self):
         """Cancel any active pick tool cleanly."""
@@ -449,7 +572,7 @@ class TubeDialog(QDialog):
         _set_combo(self.abp, d.get("ABP", "C"))
         _set_combo(self.aca, d.get("ACA", "Z"))
         _set_combo(self.acd, d.get("ACD", "AX"))
-        _set_combo(self.ack, d.get("ACK", "Z"))
+        _set_combo(self.ack, d.get("ACK", "AX"))
         try:
             self.acb.setValue(int(d.get("ACB", 0)))
         except (ValueError, TypeError):
@@ -482,7 +605,6 @@ class TubeDialog(QDialog):
             "AAN": self.aan.text().strip(),
             "AAK": self.aak.currentData(),
             "AAL": self.aal.currentData(),
-            "ABE": self.abe.currentData(),
             "ABP": self.abp.currentData(),
             "ACA": self.aca.currentData(),
             "ACB": str(acb),

@@ -1,0 +1,15 @@
+{
+  "troncon_layer_id": "...",
+  "troncon_field": "...",
+  "nd_amont_id": "...",
+  "nd_aval_id": "...",
+  "mat_field": "...",
+  "form_field": "...",
+  "reseau_field": "...",
+  "diametre_field": "...",
+  "branchement_layer_id": "...",
+  "branchement_field": "...",
+  "ban_layer_id": "...",
+  "ban_nom_voie": "...",
+  "ban_nom_com": "..."
+}
